@@ -12,10 +12,10 @@
 
 | Student ID | Student Name | Assigned Component |
 |------------|--------------|-------------------|
-| ITxxxxxxxx | Student 1    | `01_EDA.ipynb` & `03_CNN.ipynb` |
-| ITxxxxxxxx | Student 2    | `02_Preprocessing.ipynb` & `04_VGG16.ipynb` |
-| ITxxxxxxxx | Student 3    | `05_ResNet50.ipynb` |
-| ITxxxxxxxx | Student 4    | `06_EfficientNetB3.ipynb` & `07_Model_Comparison.ipynb` |
+| IT22190598 | Gamalath K.H | `05_ResNet50.ipynb` |
+| ITxxxxxxxx | Student 1    | `03_CNN.ipynb` |
+| ITxxxxxxxx | Student 2    | `04_VGG16.ipynb` |
+| ITxxxxxxxx | Student 4    | `06_EfficientNetB3.ipynb` |
 
 ---
 
