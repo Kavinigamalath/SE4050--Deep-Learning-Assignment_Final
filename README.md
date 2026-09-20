@@ -1,529 +1,199 @@
-# SE4050 Deep Learning Assignment
-## Multi-Class Brain Tumor MRI Classification Using Deep Convolutional Neural Networks and Transfer Learning
+# SE4050 - Deep Learning Assignment
+## Multi-Class Brain Tumor MRI Classification
 
 **Module**: SE4050 - Deep Learning  
-**Academic Year**: 2026  
-**Program**: BSc (Hons) in Information Technology  
+**Degree**: BSc (Hons) in Information Technology  
 **Institution**: Sri Lanka Institute of Information Technology (SLIIT)  
+**Academic Year**: 2026  
 
 ---
 
 ## Group Information
 
-| Student ID | Student Name | Assigned Component | Primary Responsibilities |
-|------------|--------------|-------------------|--------------------------|
-| IT22190598 | Gamalath K.H.| ResNet50| `05_ResNet50.ipynb`|
-| ITxxxxxxxx | Student 2    | CNN | `03_CNN.ipynb` |
-| ITxxxxxxxx | Student 3    | VGG16 | `04_VGG16.ipynb`|
-| ITxxxxxxxx | Student 4    | EfficientNetB3 | `07_Model_Comparison.ipynb`|
+| Student ID | Student Name | Assigned Component |
+|------------|--------------|-------------------|
+| ITxxxxxxxx | Student 1    | `01_EDA.ipynb` & `03_CNN.ipynb` |
+| ITxxxxxxxx | Student 2    | `02_Preprocessing.ipynb` & `04_VGG16.ipynb` |
+| ITxxxxxxxx | Student 3    | `05_ResNet50.ipynb` |
+| ITxxxxxxxx | Student 4    | `06_EfficientNetB3.ipynb` & `07_Model_Comparison.ipynb` |
 
 ---
 
-## Executive Summary
+## Project Overview
 
-Brain tumors represent one of the most critical causes of oncological morbidity and mortality globally. Early and precise differential diagnosis between distinct tumor pathologies is essential for clinical decision-making, surgical planning, and targeted radiotherapy. Magnetic Resonance Imaging (MRI) is the gold-standard non-invasive imaging modality for intracranial pathologies; however, manual interpretation is time-intensive and subject to inter-observer variability.
+This project implements and compares four supervised deep learning architectures to classify brain MRI scans into four diagnostic categories:
+- **Glioma Tumor**
+- **Meningioma Tumor**
+- **Pituitary Tumor**
+- **No Tumor** (healthy control)
 
-This project designs, trains, optimizes, and critically compares four supervised deep learning architectures to classify brain MRI scans into four distinct diagnostic classes:
-1. **Glioma Tumor**: Highly infiltrative primary neoplasms originating in glial cells, exhibiting ill-defined margins.
-2. **Meningioma Tumor**: Typically benign, extra-axial neoplasms arising from arachnoid cap cells of the meninges, characterized by distinct borders and dural tail signs.
-3. **Pituitary Tumor**: Extra-axial sellar/suprasellar adenomas affecting neuroendocrine function, exhibiting distinct anatomical confinement.
-4. **No Tumor**: Healthy brain parenchyma without intracranial pathological masses, serving as the essential clinical negative control.
+The objective is to evaluate a baseline Convolutional Neural Network trained from scratch against three pretrained transfer learning architectures (VGG16, ResNet50, EfficientNetB3) using standardized preprocessing and evaluation metrics.
 
-### Comparative Architectural Overview
+---
 
-| Model | Architecture Category | Pretrained Source | Input Dimension | Total Parameters | Trainable Parameters | Architectural Highlights |
-|---|---|---|---|---|---|---|
-| **Custom CNN** | Convolutional Network (From Scratch) | None (Random Init) | 224 x 224 x 3 | 3,119,748 | 3,119,748 | 4 Conv-BN-ReLU-Pool blocks, Global Average Pooling, Heavy Dropout (0.4) |
-| **VGG16** | Deep Sequential Transfer Learning | ImageNet-1K | 224 x 224 x 3 | 14,847,556 | 7,079,428 | Small 3x3 receptive fields, deep sequential representation, block4/5 fine-tuning |
-| **ResNet50** | Residual Learning Transfer Learning | ImageNet-1K | 224 x 224 x 3 | 24,690,500 | 14,977,028 | Identity shortcut connections, bottleneck blocks, mitigation of vanishing gradient |
-| **EfficientNetB3** | Compound Scaled CNN Transfer Learning | ImageNet-1K | 224 x 224 x 3 | 11,280,000 | 7,150,000 | MBConv inverted bottleneck, Squeeze-and-Excitation attention, compound scaling |
+## Models Implemented
+
+| Model | Type | Pretrained Source | Input Size | Key Architecture Features |
+|---|---|---|---|---|
+| **Custom CNN** | From Scratch | None (Random Init) | 224 x 224 x 3 | 4 Conv-BN-ReLU-Pool blocks, Global Average Pooling, Dropout (0.4) |
+| **VGG16** | Transfer Learning | ImageNet | 224 x 224 x 3 | Frozen feature extractor + Fine-tuning of top conv blocks (block4/5) |
+| **ResNet50** | Transfer Learning | ImageNet | 224 x 224 x 3 | Residual bottleneck connections + Fine-tuning of layer4 |
+| **EfficientNetB3** | Transfer Learning | ImageNet | 224 x 224 x 3 | MBConv inverted residual blocks with Squeeze-and-Excitation attention |
+
+---
+
+## Dataset & Partitioning
+
+- **Source**: [Brain Tumor MRI Dataset (Kaggle)](https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset) by Masoud Nickparvar (2021).
+- **Total Images**: 3,264 axial MRI scans across 4 classes.
+- **Data Splitting**: A single, unified stratified split of **70% Train / 15% Validation / 15% Test** applied in `02_Preprocessing.ipynb` with `seed=42`.
+
+| Class | Total Images | Training (70%) | Validation (15%) | Test (15%) | Class Weight |
+|---|---:|---:|---:|---:|---:|
+| Glioma Tumor | 926 | 648 | 139 | 139 | 0.8812 |
+| Meningioma Tumor | 937 | 656 | 140 | 141 | 0.8709 |
+| No Tumor | 500 | 350 | 75 | 75 | 1.6320 |
+| Pituitary Tumor | 901 | 631 | 135 | 135 | 0.9053 |
+| **Total** | **3,264** | **2,285** | **489** | **490** | **Mean = 1.0000** |
+
+*Note: Class weights are computed using the balanced inverse-frequency formula to prevent bias toward the majority classes.*
 
 ---
 
 ## Repository Structure
 
-The repository is modularly structured to guarantee end-to-end reproducibility, clean separation of concerns, and compliance with academic assessment standards:
-
 ```
 SE4050--Deep-Learning-Assignment_Final/
-|-- Dataset/                                <- Original dataset split as sourced
-|   |-- Training/                           <- Raw source training pool (2,870 images)
-|   |   |-- glioma_tumor/                   <- 826 images
-|   |   |-- meningioma_tumor/               <- 822 images
-|   |   |-- no_tumor/                       <- 395 images
-|   |   `-- pituitary_tumor/                <- 827 images
-|   `-- Testing/                            <- Raw source testing pool (394 images)
-|       |-- glioma_tumor/                   <- 100 images
-|       |-- meningioma_tumor/               <- 115 images
-|       |-- no_tumor/                       <- 105 images
-|       `-- pituitary_tumor/                <-  74 images
+|-- 01_EDA.ipynb                 # Step 1: Exploratory Data Analysis
+|-- 02_Preprocessing.ipynb       # Step 2: Unified 70/15/15 preprocessing & data split
+|-- 03_CNN.ipynb                 # Step 3: Custom CNN baseline
+|-- 04_VGG16.ipynb               # Step 4: VGG16 Transfer Learning
+|-- 05_ResNet50.ipynb            # Step 5: ResNet50 Transfer Learning
+|-- 06_EfficientNetB3.ipynb      # Step 6: EfficientNetB3 Transfer Learning
+|-- 07_Model_Comparison.ipynb    # Step 7: Cross-model performance comparison
 |
-|-- 01_EDA.ipynb                            <- Exploratory Data Analysis and distribution profiling
-|-- 02_Preprocessing.ipynb                  <- Unified stratified 70/15/15 pipeline (run once!)
-|-- 03_CNN.ipynb                            <- Custom CNN baseline trained from scratch
-|-- 04_VGG16.ipynb                          <- VGG16 two-phase transfer learning and fine-tuning
-|-- 05_ResNet50.ipynb                       <- ResNet50 residual network transfer learning
-|-- 06_EfficientNetB3.ipynb                 <- EfficientNetB3 compound scaled transfer learning
-|-- 07_Model_Comparison.ipynb               <- Cross-model metric synthesis and clinical report figures
+|-- Dataset/                     # Downloaded raw dataset from Kaggle
+|   |-- README.md                # Download & extraction instructions
+|   |-- Training/                # Raw training images per class
+|   `-- Testing/                 # Raw testing images per class
 |
-|-- preprocessed_data/                      <- Deterministic arrays generated by Notebook 02
-|   |-- X_train.npy                         <- Normalized training image tensors (2285, 224, 224, 3)
-|   |-- y_train.npy                         <- Training integer class labels (2285,)
-|   |-- X_val.npy                           <- Normalized validation image tensors (489, 224, 224, 3)
-|   |-- y_val.npy                           <- Validation integer class labels (489,)
-|   |-- X_test.npy                          <- Normalized test image tensors (490, 224, 224, 3)
-|   |-- y_test.npy                          <- Test integer class labels (490,)
-|   |-- class_weights.npy                   <- Inverse-frequency balanced class weights
-|   |-- class_names.npy                     <- Ordered class identifiers
-|   `-- preprocessing_config.json           <- Full pipeline metadata and parameters
+|-- preprocessed_data/           # Output from 02_Preprocessing.ipynb (shared .npy arrays)
+|   |-- X_train.npy, y_train.npy
+|   |-- X_val.npy, y_val.npy
+|   |-- X_test.npy, y_test.npy
+|   |-- class_weights.npy
+|   `-- preprocessing_config.json
 |
-|-- saved_models/                           <- Optimized model checkpoints (.pt / .pth)
-|   |-- CNN/                                <- CNN best checkpoint
-|   |-- VGG16/                              <- VGG16 best checkpoint
-|   |-- ResNet50/                           <- ResNet50 best checkpoint (cross-phase best loss)
-|   `-- EfficientNetB3/                     <- EfficientNetB3 best checkpoint
+|-- saved_models/                # Best model checkpoints (.pt)
+|   |-- CNN/
+|   |-- VGG16/
+|   |-- ResNet50/
+|   `-- EfficientNetB3/
 |
-|-- results/                                <- Quantitative artifacts and figures
-|   |-- CNN_metrics.json                    <- Test metrics, per-class F1, classification report
-|   |-- VGG16_metrics.json                  <- Test metrics, per-class F1, classification report
-|   |-- ResNet50_metrics.json               <- Test metrics, per-class F1, classification report
-|   |-- EfficientNetB3_metrics.json         <- Test metrics, per-class F1, classification report
-|   |-- master_results.json                 <- Aggregate comparative matrix
-|   |-- eda_class_distribution.png          <- Class frequencies and imbalance ratios
-|   |-- eda_image_properties.png            <- Spatial resolution and aspect ratio distributions
-|   |-- eda_mean_images.png                 <- Average intensity and variance per tumor class
-|   |-- eda_pixel_histograms.png            <- Channel-wise intensity histograms
-|   |-- eda_sample_images.png               <- Raw MRI visual samples per category
-|   |-- eda_augmentation_preview.png        <- Preview of stochastic transformation transforms
-|   |-- preprocessing_split_distribution.png<- Partition integrity verification across classes
-|   |-- preprocessing_sample_verification.png<- Post-normalization image sanity verification
-|   |-- ResNet50_learning_curves.png        <- Phase 1 and Phase 2 training/validation trajectories
-|   |-- ResNet50_confusion_matrix.png       <- Normalized and absolute confusion matrix
-|   |-- ResNet50_per_class_accuracy.png     <- Class-wise recall and diagnostic accuracy
-|   `-- ResNet50_roc_curves.png             <- Multi-class One-vs-Rest (OvR) ROC curves
+|-- results/                     # Metric JSON files and evaluation plots
+|   |-- *_metrics.json
+|   |-- master_results.json
+|   `-- *.png
 |
-|-- requirements.txt                        <- Pinned Python library dependencies
-`-- README.md                               <- Comprehensive project documentation
+|-- requirements.txt             # Python dependencies
+|-- .gitignore                   # Excludes raw images, large .npy arrays, and .pt weights
+`-- README.md                    # Project documentation
 ```
 
 ---
 
-## Dataset Description & Stratified Partitioning
+## Installation & Setup
 
-### Dataset Citation
+### Option 1: Local Machine Setup
 
-```bibtex
-@misc{nickparvar2021braintumor,
-  author       = {Masoud Nickparvar},
-  title        = {Brain Tumor MRI Dataset},
-  year         = {2021},
-  publisher    = {Kaggle},
-  howpublished = {\url{https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset}},
-  note         = {Open Database License (ODbL)}
-}
+```bash
+# 1. Clone the repository
+git clone https://github.com/Kavinigamalath/SE4050--Deep-Learning-Assignment_Final.git
+cd SE4050--Deep-Learning-Assignment_Final
+
+# 2. Create and activate a virtual environment
+python -m venv .venv
+
+# On Windows:
+.\.venv\Scripts\activate
+# On Linux/macOS:
+source .venv/bin/activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. (Optional) For NVIDIA GPU acceleration on Windows/Linux:
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+
+# 5. Launch JupyterLab
+jupyter lab
 ```
 
-The dataset compiles 3,264 axial T1-weighted contrast-enhanced and non-contrast MRI scans gathered from public medical repositories.
+### Option 2: Google Colab Setup (Free T4 GPU)
 
-### Dataset Acquisition & Setup
+1. Open [Google Colab](https://colab.research.google.com) and set runtime: **Runtime** -> **Change runtime type** -> **T4 GPU**.
+2. Run in a code cell:
+   ```python
+   !git clone https://github.com/Kavinigamalath/SE4050--Deep-Learning-Assignment_Final.git
+   %cd SE4050--Deep-Learning-Assignment_Final
+   !pip install -q -r requirements.txt
+   ```
 
-To maintain a lightweight repository (< 5 MB), raw images are excluded from Git tracking via `.gitignore`. Users download the dataset directly from Kaggle and place it into the `Dataset/` directory:
+---
 
-#### Option A: Manual Download (Web Browser)
+## Dataset Download
+
+The raw dataset images are excluded from Git to keep the repository lightweight (< 5 MB).
+
 1. Download `archive.zip` from [Kaggle: Brain Tumor MRI Dataset](https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset).
-2. Extract the archive directly into the `Dataset/` directory.
-3. Confirm your folder structure contains:
-   - `Dataset/Training/` (`glioma_tumor`, `meningioma_tumor`, `no_tumor`, `pituitary_tumor`)
-   - `Dataset/Testing/` (`glioma_tumor`, `meningioma_tumor`, `no_tumor`, `pituitary_tumor`)
+2. Extract the archive into the `Dataset/` folder so that `Dataset/Training/` and `Dataset/Testing/` are populated.
 
-#### Option B: Automated Download via Kaggle CLI
+Or download via Kaggle CLI:
 ```bash
-# Download and extract directly into Dataset/
 kaggle datasets download -d masoudnickparvar/brain-tumor-mri-dataset
 unzip -q brain-tumor-mri-dataset.zip -d Dataset/
 ```
 
-#### Option C: In Google Colab
-```python
-# Download and extract inside Colab
-!pip install -q opendatasets
-import opendatasets as od
-od.download('https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset', data_dir='Dataset')
-```
+---
 
-### Class Imbalance Profile
+## Execution Order
 
-- **Glioma Tumor**: 926 images (28.37%)
-- **Meningioma Tumor**: 937 images (28.71%)
-- **Pituitary Tumor**: 901 images (27.60%)
-- **No Tumor**: 500 images (15.32%)
+The notebooks must be executed sequentially:
 
-The healthy control class (`no_tumor`) represents a significant minority (approximately half the volume of any single tumor class). Without explicit correction, unweighted cross-entropy loss gradients bias models toward the majority tumor classes, resulting in unacceptable false-positive rates for healthy patients.
-
-### Stratified 70 / 15 / 15 Split
-
-To avoid the flawed distribution of the original Kaggle folder split (which placed an arbitrary, unstratified set into testing), all 3,264 images are unified in `02_Preprocessing.ipynb` and partitioned using a **two-stage stratified split** with fixed random seed (`seed = 42`):
-1. **Train vs. Temporary Split (70% / 30%)**: Preserves identical class proportions.
-2. **Validation vs. Test Split (50% / 50% of the 30% remainder)**: Yields exactly 15% Validation and 15% Test.
-
-| Diagnostic Class | Total Images | Training (70%) | Validation (15%) | Test (15%) | Inverse Class Weight ($w_c$) |
-|------------------|-------------:|---------------:|-----------------:|-----------:|-----------------------------:|
-| **Glioma Tumor** | 926 | 648 | 139 | 139 | 0.8812 |
-| **Meningioma Tumor** | 937 | 656 | 140 | 141 | 0.8709 |
-| **No Tumor** | 500 | 350 | 75 | 75 | 1.6320 |
-| **Pituitary Tumor** | 901 | 631 | 135 | 135 | 0.9053 |
-| **Total** | **3,264** | **2,285** | **489** | **490** | **Mean = 1.0000** |
-
-#### Class Weighting Formulation
-
-Balanced class weights are computed via scikit-learn according to:
-
-$$w_c = \frac{N}{C \times N_c}$$
-
-Where $N = 2,285$ (training samples), $C = 4$ (classes), and $N_c$ is the class sample count. These weights are directly passed to `torch.nn.CrossEntropyLoss(weight=weights_tensor)` during optimization.
+1. **`01_EDA.ipynb`**: Analyzes class distributions, image dimensions, intensity profiles, and mean images.
+2. **`02_Preprocessing.ipynb`**: **Required once.** Resizes images to 224x224, normalizes to [0, 1], performs the 70/15/15 stratified split, computes class weights, and saves arrays to `preprocessed_data/`.
+3. **`03_CNN.ipynb`**: Trains the custom 4-block CNN baseline from scratch.
+4. **`04_VGG16.ipynb`**: Trains VGG16 with feature extraction (Phase 1) and fine-tuning (Phase 2).
+5. **`05_ResNet50.ipynb`**: Trains ResNet50 with feature extraction (Phase 1) and residual bottleneck fine-tuning (Phase 2).
+6. **`06_EfficientNetB3.ipynb`**: Trains EfficientNetB3 with compound scaling and fine-tuning.
+7. **`07_Model_Comparison.ipynb`**: Aggregates all model metrics, generates comparative tables, ROC-AUC curves, confusion matrices, and summarizes results.
 
 ---
 
-## Preprocessing and Augmentation Strategy
+## Evaluation Metrics
 
-Data handling is architected into two decoupled phases to enforce rigorous medical ML hygiene and prevent data leakage:
+All models are evaluated on the identical 490-image test set using:
+- **Test Accuracy & Balanced Accuracy**
+- **Precision, Recall, and F1-Score** (Macro and Weighted averages)
+- **One-vs-Rest (OvR) ROC-AUC** per class
+- **Confusion Matrix** (raw counts and normalized)
 
-```
-+-----------------------------------------------------------------------------------+
-| Phase 1: Static Preprocessing (02_Preprocessing.ipynb)                           |
-| - Read raw files across all directories using ThreadPoolExecutor (max_workers=8)  |
-| - Convert to 3-channel RGB (converting grayscale scans to uniform 3D tensors)     |
-| - High-quality spatial resize to standardized 224 x 224 resolution (cv2.INTER_AREA)|
-| - Min-max pixel scaling: x / 255.0 -> [0.0, 1.0]                                  |
-| - Two-stage stratified split (70% Train, 15% Val, 15% Test, Seed 42)              |
-| - Export to preprocessed_data/*.npy and preprocessing_config.json                  |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-+-----------------------------------------------------------------------------------+
-| Phase 2: Dynamic On-The-Fly Training Augmentation (Notebooks 03, 04, 05, 06)      |
-| - Handled inside custom PyTorch MRIDataset via torchvision.transforms             |
-| - APPLIED STRICTLY TO TRAINING SET ONLY                                           |
-| - Validation and Test sets remain strictly unaugmented (true clinical data)      |
-| - Transforms per epoch:                                                           |
-|     * Random Horizontal Flip (p=0.5)                                              |
-|     * Random Rotation (+/-15 degrees to +/-40 degrees)                            |
-|     * Random Affine (scale 0.9 to 1.1, subtle shear)                              |
-|     * ColorJitter (brightness +/-0.15, contrast +/-0.15)                          |
-| - Pretrained model normalization (ImageNet mean/std: [0.485, 0.456, 0.406])       |
-+-----------------------------------------------------------------------------------+
-```
+### Summary of Results (Test Set)
 
-### Rationale for On-The-Fly Augmentation
+| Model | Test Accuracy | Macro Precision | Macro Recall | Macro F1-Score | Weighted ROC-AUC |
+|---|---|---|---|---|---|
+| **Custom CNN** | *Evaluated in 03* | *Evaluated in 03* | *Evaluated in 03* | *Evaluated in 03* | *Evaluated in 03* |
+| **VGG16** | *Evaluated in 04* | *Evaluated in 04* | *Evaluated in 04* | *Evaluated in 04* | *Evaluated in 04* |
+| **ResNet50** | 87.76% | 87.18% | 88.95% | 87.84% | 0.9788 |
+| **EfficientNetB3** | *Evaluated in 06* | *Evaluated in 06* | *Evaluated in 06* | *Evaluated in 06* | *Evaluated in 06* |
 
-1. **Zero Data Leakage**: Augmenting the dataset prior to splitting leads to near-identical synthetic twins populating both training and test partitions, artificially inflating validation accuracy. Dynamic dataset-level transforms guarantee complete independence.
-2. **Clinical Realism & Anatomical Validity**: Extreme distortions (such as elastic warping or vertical inversion) violate clinical plausibility in brain MRI. The pipeline restricts operations to subtle axial rotations ($\pm 15^\circ$), horizontal symmetry (brain hemispheres are naturally bilaterally symmetric), and modest scanner gain fluctuations ($\pm 15\%$ contrast/brightness).
-3. **Exponential Sample Diversity**: Offline augmentation produces a static multiplier (e.g., $3\times$ original = 6,855 fixed images). On-the-fly stochastic augmentation exposes the network to virtually non-repeating variations across 50 epochs ($2,285 \times 50 = 114,250$ unique visual representations), functioning as continuous implicit regularization.
+*Complete metrics, ROC curves, and cross-model comparison charts are generated in `07_Model_Comparison.ipynb`.*
 
 ---
 
-## Execution & Setup Guide
-
-This project can be executed either in the cloud on **Google Colab (Free T4 GPU)** or locally on **any workstation (Windows, Linux, macOS)**.
-
-```
-Choose your execution path:
-|-- Path A: Google Colab (Recommended: Free 16GB Cloud GPU, zero local install)
-`-- Path B: Universal Local Workstation (Windows / Linux / macOS)
-```
-
----
-
-### Path A: Google Colab Setup (Zero Local Installation)
-
-Google Colab provides a free cloud-hosted environment with an **NVIDIA T4 GPU (16 GB VRAM)**. This allows anyone to run the full pipeline without installing CUDA or configuring local hardware.
-
-#### Step 1: Open Google Colab and Enable GPU
-1. Navigate to [Google Colab](https://colab.research.google.com).
-2. Create a new notebook or open an existing one.
-3. In the top menu, navigate to: **Runtime** -> **Change runtime type**.
-4. Under *Hardware accelerator*, select **T4 GPU** and click **Save**.
-
-#### Step 2: Clone Repository and Enter Workspace
-Run the following code in a Colab code cell:
-```python
-# Clone the repository
-!git clone https://github.com/Kavinigamalath/SE4050--Deep-Learning-Assignment_Final.git
-%cd SE4050--Deep-Learning-Assignment_Final
-```
-
-#### Step 3: Verify GPU Acceleration
-```python
-import torch
-print("CUDA Available :", torch.cuda.is_available())
-if torch.cuda.is_available():
-    print("Device Name    :", torch.cuda.get_device_name(0))
-    print("VRAM Allocated :", round(torch.cuda.get_device_properties(0).total_memory / (1024**3), 2), "GB")
-```
-Expected output:
-```text
-CUDA Available : True
-Device Name    : Tesla T4
-VRAM Allocated : 14.75 GB (or ~15 GB)
-```
-
-#### Step 4: Install Any Missing Requirements
-Google Colab comes with PyTorch, Torchvision, Scikit-Learn, and Matplotlib pre-installed. Install the remaining specific packages:
-```python
-!pip install -q -r requirements.txt
-```
-
-#### Step 5: (Optional) Mount Google Drive for Model Persistence
-Colab temporary runtimes disconnect after periods of inactivity. To ensure trained weights (`saved_models/`) and diagnostic plots (`results/`) persist permanently:
-```python
-from google.colab import drive
-drive.mount('/content/drive')
-
-# Create backup directory on your Google Drive
-!mkdir -p /content/drive/MyDrive/SE4050_Brain_Tumor_Backup
-```
-After training models, sync results:
-```python
-!cp -r results/ /content/drive/MyDrive/SE4050_Brain_Tumor_Backup/
-!cp -r saved_models/ /content/drive/MyDrive/SE4050_Brain_Tumor_Backup/
-```
-
-#### Step 6: Sequential Execution in Colab
-Execute each notebook sequentially using Colab's `%run` magic or open the individual `.ipynb` files from the cloned repository file tree in Colab:
-```python
-# 1. Exploratory Data Analysis
-%run 01_EDA.ipynb
-
-# 2. Unified Preprocessing (Generates 70/15/15 arrays)
-%run 02_Preprocessing.ipynb
-
-# 3. Model Training
-%run 03_CNN.ipynb
-%run 04_VGG16.ipynb
-%run 05_ResNet50.ipynb
-%run 06_EfficientNetB3.ipynb
-
-# 4. Comparative Evaluation
-%run 07_Model_Comparison.ipynb
-```
-
----
-
-### Path B: Universal Local Workstation Setup (Any Machine / Any OS)
-
-This setup enables any student, examiner, or researcher to clone and run the repository on their personal machine (Windows, Linux, or macOS).
-
-#### Prerequisites
-- **Python**: Version 3.10 or 3.11 recommended.
-- **Git**: Installed and available in PATH.
-- **Hardware Acceleration**:
-  - NVIDIA GPU with CUDA 11.8 or 12.x (Recommended for fast training).
-  - Apple Silicon Mac (M1/M2/M3/M4) via PyTorch MPS backend.
-  - CPU Fallback: If no dedicated GPU is available, the codebase automatically detects and falls back to CPU execution without throwing runtime errors.
-
-#### Step 1: Clone the Repository
-```bash
-git clone https://github.com/Kavinigamalath/SE4050--Deep-Learning-Assignment_Final.git
-cd SE4050--Deep-Learning-Assignment_Final
-```
-
-#### Step 2: Create a Clean Virtual Environment
-
-**On Windows (PowerShell or Command Prompt):**
-```powershell
-python -m venv .venv
-.\.venv\Scripts\activate
-```
-
-**On Linux or macOS (Terminal):**
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-#### Step 3: Install Dependencies
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-#### Step 4: Install PyTorch with Platform-Specific Acceleration
-
-- **For NVIDIA GPU Users (Windows / Linux with CUDA 12.x)**:
-  ```bash
-  pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
-  ```
-- **For CPU-Only Users (Any Laptop / Desktop without dedicated GPU)**:
-  ```bash
-  pip install torch torchvision
-  ```
-- **For Apple Silicon Users (macOS M-series)**:
-  ```bash
-  pip install torch torchvision
-  # PyTorch will automatically utilize the MPS (Metal Performance Shaders) backend.
-  ```
-
-#### Step 5: Register the Virtual Environment as a Jupyter Kernel
-```bash
-python -m ipykernel install --user --name brain_tumor_env --display-name "Python (Brain Tumor Env)"
-```
-
-#### Step 6: Verify Environment Setup
-```bash
-python -c "import torch; print('PyTorch Version:', torch.__version__); print('CUDA Available:', torch.cuda.is_available()); print('Device in use:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU')"
-```
-
-#### Step 7: Launch JupyterLab
-```bash
-jupyter lab
-```
-In JupyterLab, open any notebook, click on the kernel name in the upper-right corner, and select **`Python (Brain Tumor Env)`**.
-
----
-
-### Reference Benchmark Hardware Configuration
-
-For transparency and academic reproducibility, all experimental benchmarks reported in this documentation were established under the following standardized local hardware environment:
-
-- **Host Processor**: Intel Core i7 / AMD Ryzen Multi-Core CPU
-- **System Memory**: 16 GB DDR4/DDR5 RAM
-- **Dedicated GPU**: NVIDIA GeForce RTX 4050 Laptop GPU (6 GB GDDR6 VRAM)
-- **Host OS**: Microsoft Windows 11 64-bit
-- **Compute Stack**: CUDA 12.8 / cuDNN 9.x, PyTorch 2.11.0+cu128
-- **Dedicated Virtual Environment**: `orchid_gpu` (Python 3.11.9)
-
----
-
-## Notebook Execution Workflow
-
-To reproduce all experiments from raw data to comparative analysis, execute the notebooks in strict numerical order:
-
-| Step | Notebook | Core Functionality | Primary Outputs Generated |
-|---|---|---|---|---|
-| **01** | `01_EDA.ipynb` | Spatial property inspection, class counts, intensity profiling, mean/variance images | `results/eda_*.png`, `results/eda_summary.json` | 
-
-| **02** | `02_Preprocessing.ipynb` | Multi-threaded reading, resizing, 70/15/15 stratified partitioning, class weight generation | `preprocessed_data/*.npy`, `preprocessing_config.json` | 
-| **03** | `03_CNN.ipynb` | Training 4-block custom CNN baseline from scratch with dropout and early stopping | `saved_models/CNN/`, `results/CNN_metrics.json` |
-
-| **04** | `04_VGG16.ipynb` | Two-phase transfer learning (frozen feature extractor, fine-tune block4 & block5) | `saved_models/VGG16/`, `results/VGG16_metrics.json` | 
-
-| **05** | `05_ResNet50.ipynb` | Two-phase transfer learning (frozen base, fine-tune layer4 residual bottlenecks) | `saved_models/ResNet50/`, `results/ResNet50_metrics.json` |
-| **06** | `06_EfficientNetB3.ipynb` | Compound scaled transfer learning with MBConv and Squeeze-and-Excitation | `saved_models/EfficientNetB3/`, `results/EfficientNetB3_metrics.json` | ~7 - 10 minutes (GPU) |
-| **07** | `07_Model_Comparison.ipynb` | Synthesizes all model JSONs, statistical performance radar, ROC curves, confusion matrices | `results/master_results.json`, Comparative plots |
-
----
-
-## Model Training & Optimization Strategy
-
-### Two-Phase Transfer Learning Protocol
-
-All transfer learning models (VGG16, ResNet50, EfficientNetB3) employ a two-phase training protocol to prevent destructive catastrophic forgetting of general image features:
-
-```
-Phase 1: Feature Extraction (Warmup)
-+-----------------------------------------------------------------------------------+
-| Pretrained Convolutional Base: FROZEN (requires_grad = False)                     |
-| Dense Classification Head: TRAINABLE (He/Kaiming Initialized)                     |
-| Optimizer: Adam / AdamW (Learning Rate = 1e-3, Weight Decay = 1e-4)               |
-| Epochs: Up to 30 epochs (EarlyStopping patience = 8)                              |
-| Objective: Adapt dense classification projection to brain MRI geometry            |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-Phase 2: Fine-Tuning (Deep Adaptation)
-+-----------------------------------------------------------------------------------+
-| Lower Convolutional Blocks: FROZEN (Retains low-level edges/textures)             |
-| Upper Convolutional Blocks: UNFROZEN (Adapts high-level tumor morphology)          |
-| Dense Classification Head: TRAINABLE                                              |
-| Optimizer: AdamW (Reduced Learning Rate = 1e-4 to 1e-5, Weight Decay = 1e-4)       |
-| Epochs: Up to 50 epochs (EarlyStopping patience = 10)                             |
-| Objective: Refine deep receptive fields for subtle glioma/meningioma boundaries   |
-+-----------------------------------------------------------------------------------+
-```
-
-### Advanced Early Stopping & Checkpoint Management
-
-Standard early stopping algorithms often fail during multi-phase training because resetting the optimizer between phases can cause a temporary loss spike, leading to premature termination.
-
-Our custom `EarlyStopping` implementation features:
-1. **Cross-Phase Benchmark Retention**: The minimum validation loss from Phase 1 (`initial_best_loss`) is carried over into Phase 2, ensuring Phase 2 must genuinely surpass Phase 1 performance to avoid patience depletion.
-2. **Automated State Restoration**: At the conclusion of training, the model weights are automatically restored to the global best validation checkpoint (`restore_best_weights=True`), ensuring test set evaluations reflect the true optimum rather than an overfitted terminal state.
-
----
-
-## Evaluation Framework & Benchmark Results
-
-### Evaluation Metrics
-
-All models are evaluated on the isolated 490-image test set across multiple statistical dimensions:
-
-- **Balanced Accuracy**: Arithmetic mean of per-class recall, invariant to class imbalance.
-- **Macro F1-Score**: Primary benchmark metric giving equal weight to every tumor pathology.
-- **Weighted F1-Score**: Metric weighted by true class support.
-- **One-vs-Rest (OvR) ROC-AUC**: Measures class separability across probability thresholds.
-- **Confusion Matrices**: Normalized to display true positive rates and cross-tumor misclassifications.
-- **Clinical Sensitivity / Recall**: Crucial for malignant tumors (e.g. Glioma) where false negatives pose severe clinical risks.
-
-### Preliminary ResNet50 Benchmark
-
-The following performance benchmarks were established using the optimized ResNet50 model:
-
-```text
-================================================================================
-MODEL EVALUATION SUMMARY: ResNet50
-================================================================================
-Test Accuracy:           87.76%
-Balanced Accuracy:       88.95%
-Macro Precision:         87.18%
-Macro Recall:            88.95%
-Macro F1-Score:          87.84%
-Weighted F1-Score:       87.61%
-Weighted ROC-AUC:        0.9788
-Total Parameters:        24,690,500
-Epochs Trained:          53 (Early Stopping triggered in Phase 2)
-================================================================================
-
-PER-CLASS CLASSIFICATION REPORT:
---------------------------------------------------------------------------------
-Class             Precision    Recall    F1-Score    Support
---------------------------------------------------------------------------------
-glioma_tumor         0.8971    0.8777      0.8873        139
-meningioma_tumor     0.8425    0.7589      0.7985        141
-no_tumor             0.8202    0.9733      0.8902         75
-pituitary_tumor      0.9275    0.9481      0.9377        135
---------------------------------------------------------------------------------
-Macro Avg            0.8718    0.8895      0.8784        490
-Weighted Avg         0.8780    0.8776      0.8761        490
---------------------------------------------------------------------------------
-```
-
-#### Key Clinical Diagnostic Observations
-
-- **Exceptional Healthy Screen Accuracy (`no_tumor`)**: 97.33% recall on the minority control class demonstrates that inverse class weighting successfully eliminated false-negative bias. Healthy scans are virtually never misdiagnosed as malignant lesions.
-- **Pituitary Tumor Distinction**: 94.81% recall and 0.9377 F1-score; the sella turcica localization provides a strong geometric inductive bias for deep convolutional filters.
-- **Meningioma / Glioma Misclassification**: The primary failure mode occurs along the boundary between Meningioma and Glioma (meningioma recall = 75.89%). Axial cross-sections displaying dural-attached high-grade gliomas exhibit visual similarities to atypical meningiomas, representing a documented challenge in radiological literature.
-
----
-
-## Assignment Deliverables Checklist
-
-- [x] **Exploratory Data Analysis (`01_EDA.ipynb`)**: Statistical profiles, class counts, aspect ratio checks, channel histograms, mean/variance representations.
-- [x] **Standardized Preprocessing (`02_Preprocessing.ipynb`)**: Unified stratified 70/15/15 partition, Lanczos/area downsampling to 224x224, balanced class weights, zero leakage.
-- [x] **Custom Architecture from Scratch (`03_CNN.ipynb`)**: 4-block deep convolutional network baseline with batch normalization, spatial pooling, and dropout.
-- [x] **Transfer Learning Architecture 1 (`04_VGG16.ipynb`)**: Pretrained VGG16 with feature extraction and block4/block5 fine-tuning.
-- [x] **Transfer Learning Architecture 2 (`05_ResNet50.ipynb`)**: Pretrained ResNet50 with residual bottleneck fine-tuning and cross-phase checkpoint restoration.
-- [x] **Transfer Learning Architecture 3 (`06_EfficientNetB3.ipynb`)**: Pretrained EfficientNetB3 with MBConv inverted residual attention.
-- [x] **Comparative Synthesis (`07_Model_Comparison.ipynb`)**: Master metrics consolidation, multi-class ROC curves, confusion matrices, and clinical failure mode analysis.
-- [x] **Hardware & Execution Standards**: Full GPU acceleration verified on Windows via PyTorch 2.11+cu128, deterministic random seed (`seed = 42`).
-- [x] **Clean Documentation (`README.md`)**: Fully specified repository guide without emojis or incomplete sections.
-
----
-
-## Academic References
-
-1. **Simonyan, K., & Zisserman, A.** (2015). Very deep convolutional networks for large-scale image recognition. *International Conference on Learning Representations (ICLR)*.
-2. **He, K., Zhang, X., Ren, S., & Sun, J.** (2016). Deep residual learning for image recognition. *IEEE Conference on Computer Vision and Pattern Recognition (CVPR)*, 770-778.
-3. **Tan, M., & Le, Q. V.** (2019). EfficientNet: Rethinking model scaling for convolutional neural networks. *International Conference on Machine Learning (ICML)*, 6105-6114.
-4. **Nickparvar, M.** (2021). Brain Tumor MRI Dataset. *Kaggle Datasets*. https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset.
-5. **Paszke, A., Gross, S., Massa, F., Lerer, A., Bradbury, J., Chanan, G., ... & Chintala, S.** (2019). PyTorch: An imperative style, high-performance deep learning library. *Advances in Neural Information Processing Systems (NeurIPS)*, 32.
-6. **Chollet, F., et al.** (2023). Keras 3: Universal Deep Learning. https://keras.io.
+## References
+
+1. Simonyan, K., & Zisserman, A. (2015). Very deep convolutional networks for large-scale image recognition. *ICLR*.
+2. He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep residual learning for image recognition. *CVPR*.
+3. Tan, M., & Le, Q. V. (2019). EfficientNet: Rethinking model scaling for convolutional neural networks. *ICML*.
+4. Nickparvar, M. (2021). Brain Tumor MRI Dataset. *Kaggle*. https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset
