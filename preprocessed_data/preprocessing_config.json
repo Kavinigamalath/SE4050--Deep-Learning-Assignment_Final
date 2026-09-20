@@ -1,0 +1,54 @@
+{
+  "description": "SE4050 Preprocessing Configuration",
+  "random_seed": 42,
+  "target_size": [
+    224,
+    224
+  ],
+  "channels": 3,
+  "pixel_scale": 255.0,
+  "train_proportion": 0.7,
+  "val_proportion": 0.15,
+  "test_proportion": 0.15,
+  "class_weight_strategy": "balanced",
+  "class_names": [
+    "glioma_tumor",
+    "meningioma_tumor",
+    "no_tumor",
+    "pituitary_tumor"
+  ],
+  "class_weights": [
+    0.8811728358268738,
+    0.8704268336296082,
+    1.631428599357605,
+    0.9063491821289062
+  ],
+  "split_sizes": {
+    "train": 2284,
+    "val": 490,
+    "test": 490
+  },
+  "per_class_train_counts": {
+    "glioma_tumor": 648,
+    "meningioma_tumor": 656,
+    "no_tumor": 350,
+    "pituitary_tumor": 630
+  },
+  "per_class_val_counts": {
+    "glioma_tumor": 139,
+    "meningioma_tumor": 140,
+    "no_tumor": 75,
+    "pituitary_tumor": 136
+  },
+  "per_class_test_counts": {
+    "glioma_tumor": 139,
+    "meningioma_tumor": 141,
+    "no_tumor": 75,
+    "pituitary_tumor": 135
+  },
+  "normalization_note": "Arrays are normalised to [0, 1] only. Model-specific normalisation (ImageNet mean subtraction) is applied inside each model notebook.",
+  "source_directories": [
+    "C:\\Users\\SN Gamalath\\Documents\\GitHub\\SE4050--Deep-Learning-Assignment_Final\\Dataset\\Training",
+    "C:\\Users\\SN Gamalath\\Documents\\GitHub\\SE4050--Deep-Learning-Assignment_Final\\Dataset\\Testing"
+  ]
+}

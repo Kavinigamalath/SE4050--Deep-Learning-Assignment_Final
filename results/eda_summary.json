@@ -1,0 +1,31 @@
+{
+  "class_names": [
+    "glioma_tumor",
+    "meningioma_tumor",
+    "no_tumor",
+    "pituitary_tumor"
+  ],
+  "train_counts": {
+    "glioma_tumor": 826,
+    "meningioma_tumor": 822,
+    "no_tumor": 395,
+    "pituitary_tumor": 827
+  },
+  "test_counts": {
+    "glioma_tumor": 100,
+    "meningioma_tumor": 115,
+    "no_tumor": 105,
+    "pituitary_tumor": 74
+  },
+  "pooled_total": 3264,
+  "quality_issues": 0,
+  "mode_distribution": {
+    "RGB": 2870
+  },
+  "class_weights": {
+    "0": 0.8686440677966102,
+    "1": 0.8728710462287105,
+    "2": 1.8164556962025316,
+    "3": 0.8675937122128174
+  }
+}

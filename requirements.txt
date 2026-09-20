@@ -1,0 +1,43 @@
+# SE4050 Deep Learning Assignment - Requirements
+# Multi-Class Brain Tumor MRI Classification
+# Compatible with: Python 3.10 / 3.11 / 3.12 (Windows, Linux, macOS, Google Colab)
+
+# -- Core Deep Learning --------------------------------------------------------
+torch>=2.0.0
+torchvision>=0.15.0
+
+# -- Scientific Computing & Machine Learning -----------------------------------
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+scikit-image>=0.20.0
+
+# -- Image Processing ----------------------------------------------------------
+opencv-python>=4.8.0
+Pillow>=10.0.0
+
+# -- Visualization -------------------------------------------------------------
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# -- Jupyter Environment -------------------------------------------------------
+jupyterlab>=4.0.0
+ipykernel>=6.25.0
+
+# -- Utilities -----------------------------------------------------------------
+tqdm>=4.65.0
+h5py>=3.9.0
+joblib>=1.3.0
+
+# -- Notes on Hardware Acceleration --------------------------------------------
+# 1. Google Colab:
+#    PyTorch with CUDA GPU is pre-installed. Running "pip install -r requirements.txt"
+#    preserves Colab's pre-configured GPU runtime without conflicts.
+#
+# 2. Local Workstations with NVIDIA GPUs:
+#    To install PyTorch with native CUDA acceleration, run:
+#    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+#
+# 3. CPU-only and Apple Silicon (Mac M-series):
+#    Standard "pip install -r requirements.txt" will automatically select the
+#    appropriate platform binary (CPU / Metal MPS).

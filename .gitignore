@@ -1,0 +1,132 @@
+# ==============================================================================
+# SE4050 Deep Learning Assignment - .gitignore
+# Multi-Class Brain Tumor MRI Classification
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Raw Dataset (Images downloaded from Kaggle by user)
+# Dataset source: https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset
+# Keeps GitHub repository lightweight (< 5 MB) and avoids hosting large binaries.
+# ------------------------------------------------------------------------------
+Dataset/*
+!Dataset/README.md
+!Dataset/.gitkeep
+archive.zip
+*.zip
+*.tar.gz
+*.tgz
+
+# ------------------------------------------------------------------------------
+# 2. Large Preprocessed Data Arrays (GitHub 100 MB File Limit)
+# Note: X_train.npy is ~1.37 GB and will trigger GitHub push rejection (GH001).
+# These arrays are generated locally in ~2 seconds by running 02_Preprocessing.ipynb.
+# ------------------------------------------------------------------------------
+preprocessed_data/*.npy
+preprocessed_data/*.npz
+!preprocessed_data/preprocessing_config.json
+!preprocessed_data/.gitkeep
+
+# ------------------------------------------------------------------------------
+# 2. Large Trained Model Weights and Checkpoints (> 100 MB)
+# VGG16, ResNet50, and EfficientNet weights exceed GitHub upload limits.
+# ------------------------------------------------------------------------------
+saved_models/**/*.pt
+saved_models/**/*.pth
+saved_models/**/*.h5
+saved_models/**/*.keras
+saved_models/**/*.onnx
+saved_models/**/*.bin
+*.pt
+*.pth
+*.h5
+*.keras
+*.onnx
+
+# Retain directory structure in Git
+!saved_models/.gitkeep
+!saved_models/**/.gitkeep
+
+# ------------------------------------------------------------------------------
+# 3. Python Bytecode, Caches and Build Artifacts
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ------------------------------------------------------------------------------
+# 4. Virtual Environments
+# ------------------------------------------------------------------------------
+.venv/
+venv/
+ENV/
+env/
+orchid_gpu/
+env.bak/
+venv.bak/
+
+# ------------------------------------------------------------------------------
+# 5. Jupyter Notebook Checkpoints and Autosaves
+# ------------------------------------------------------------------------------
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+.jupyter/
+
+# ------------------------------------------------------------------------------
+# 6. IDEs, Editors and Workspaces
+# ------------------------------------------------------------------------------
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# ------------------------------------------------------------------------------
+# 7. Operating System Artifacts
+# ------------------------------------------------------------------------------
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.directory
+
+# ------------------------------------------------------------------------------
+# 8. Temporary Logs, Diagnostics and Archives
+# ------------------------------------------------------------------------------
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.tar.gz
+*.zip
+*.rar
