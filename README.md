@@ -12,10 +12,10 @@
 
 | Student ID | Student Name | Assigned Component | Primary Responsibilities |
 |------------|--------------|-------------------|--------------------------|
-| ITxxxxxxxx | Student 1    | Exploratory Data Analysis & Custom CNN | `01_EDA.ipynb`, `03_CNN.ipynb`, Baseline Architecture |
-| ITxxxxxxxx | Student 2    | Preprocessing Pipeline & VGG16 | `02_Preprocessing.ipynb`, `04_VGG16.ipynb`, Transfer Learning Phase 1 & 2 |
-| ITxxxxxxxx | Student 3    | ResNet50 Architecture & Optimization | `05_ResNet50.ipynb`, Early Stopping, Checkpointing |
-| ITxxxxxxxx | Student 4    | EfficientNetB3 & Comparative Analysis | `06_EfficientNetB3.ipynb`, `07_Model_Comparison.ipynb`, Metric Synthesis |
+| IT22190598 | Gamalath K.H.| ResNet50| `05_ResNet50.ipynb`|
+| ITxxxxxxxx | Student 2    | CNN | `03_CNN.ipynb` |
+| ITxxxxxxxx | Student 3    | VGG16 | `04_VGG16.ipynb`|
+| ITxxxxxxxx | Student 4    | EfficientNetB3 | `07_Model_Comparison.ipynb`|
 
 ---
 
