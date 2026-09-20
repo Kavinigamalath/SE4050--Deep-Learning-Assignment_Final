@@ -398,15 +398,18 @@ For transparency and academic reproducibility, all experimental benchmarks repor
 
 To reproduce all experiments from raw data to comparative analysis, execute the notebooks in strict numerical order:
 
-| Step | Notebook | Core Functionality | Primary Outputs Generated | Typical Execution Time |
+| Step | Notebook | Core Functionality | Primary Outputs Generated |
 |---|---|---|---|---|
-| **01** | `01_EDA.ipynb` | Spatial property inspection, class counts, intensity profiling, mean/variance images | `results/eda_*.png`, `results/eda_summary.json` | ~30 seconds (GPU/CPU) |
-| **02** | `02_Preprocessing.ipynb` | Multi-threaded reading, resizing, 70/15/15 stratified partitioning, class weight generation | `preprocessed_data/*.npy`, `preprocessing_config.json` | ~2.5 seconds (Multi-threaded) |
-| **03** | `03_CNN.ipynb` | Training 4-block custom CNN baseline from scratch with dropout and early stopping | `saved_models/CNN/`, `results/CNN_metrics.json` | ~4 - 6 minutes (GPU) |
-| **04** | `04_VGG16.ipynb` | Two-phase transfer learning (frozen feature extractor, fine-tune block4 & block5) | `saved_models/VGG16/`, `results/VGG16_metrics.json` | ~6 - 8 minutes (GPU) |
-| **05** | `05_ResNet50.ipynb` | Two-phase transfer learning (frozen base, fine-tune layer4 residual bottlenecks) | `saved_models/ResNet50/`, `results/ResNet50_metrics.json` | ~5 - 7 minutes (GPU) |
+| **01** | `01_EDA.ipynb` | Spatial property inspection, class counts, intensity profiling, mean/variance images | `results/eda_*.png`, `results/eda_summary.json` | 
+
+| **02** | `02_Preprocessing.ipynb` | Multi-threaded reading, resizing, 70/15/15 stratified partitioning, class weight generation | `preprocessed_data/*.npy`, `preprocessing_config.json` | 
+| **03** | `03_CNN.ipynb` | Training 4-block custom CNN baseline from scratch with dropout and early stopping | `saved_models/CNN/`, `results/CNN_metrics.json` |
+
+| **04** | `04_VGG16.ipynb` | Two-phase transfer learning (frozen feature extractor, fine-tune block4 & block5) | `saved_models/VGG16/`, `results/VGG16_metrics.json` | 
+
+| **05** | `05_ResNet50.ipynb` | Two-phase transfer learning (frozen base, fine-tune layer4 residual bottlenecks) | `saved_models/ResNet50/`, `results/ResNet50_metrics.json` |
 | **06** | `06_EfficientNetB3.ipynb` | Compound scaled transfer learning with MBConv and Squeeze-and-Excitation | `saved_models/EfficientNetB3/`, `results/EfficientNetB3_metrics.json` | ~7 - 10 minutes (GPU) |
-| **07** | `07_Model_Comparison.ipynb` | Synthesizes all model JSONs, statistical performance radar, ROC curves, confusion matrices | `results/master_results.json`, Comparative plots | ~1 minute |
+| **07** | `07_Model_Comparison.ipynb` | Synthesizes all model JSONs, statistical performance radar, ROC curves, confusion matrices | `results/master_results.json`, Comparative plots |
 
 ---
 
